@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.maven.publish)
-    alias(libs.plugins.tapmoc)
 }
 
 android {
@@ -21,10 +20,6 @@ android {
             version = "3.22.1"
         }
     }
-}
-
-tapmoc {
-    java(17)
 }
 
 mavenPublishing {
