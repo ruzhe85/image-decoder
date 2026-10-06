@@ -22,11 +22,10 @@ bool inline isWhitePixel(const uint8_t* pixels, uint32_t width, uint32_t x,
 uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
                         uint32_t top, uint32_t bottom, bool aggressive) {
   int x, y;
-  // Komiho: the dominant-color check keeps the stock limit so dark/mixed page
-  // detection behaves exactly as before; only the content-edge scan uses the
-  // aggressive limit (watermark/page-number lines are a few percent filled and
-  // must not count as content).
-  const auto detectLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  // Komiho: one limit for both the dominant-color check and the content scan —
+  // in aggressive mode faint noise/watermark on the very edge line must not
+  // abort the whole edge as "mixed fill" (the stock limit aborted on ~2 dark
+  // samples; real mixed edges are still >10% on both colors and do abort).
   const auto filledLimit = (uint32_t)round(
       height * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
@@ -43,10 +42,10 @@ uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > detectLimit && blackPixels > detectLimit) {
+  if (whitePixels > filledLimit && blackPixels > filledLimit) {
     // Mixed fill found... don't crop anything
     return 0;
-  } else if (blackPixels > detectLimit) {
+  } else if (blackPixels > filledLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -75,7 +74,10 @@ uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
 uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
                          uint32_t top, uint32_t bottom, bool aggressive) {
   int x, y;
-  const auto detectLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  // Komiho: one limit for both the dominant-color check and the content scan —
+  // in aggressive mode faint noise/watermark on the very edge line must not
+  // abort the whole edge as "mixed fill" (the stock limit aborted on ~2 dark
+  // samples; real mixed edges are still >10% on both colors and do abort).
   const auto filledLimit = (uint32_t)round(
       height * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
@@ -93,10 +95,10 @@ uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > detectLimit && blackPixels > detectLimit) {
+  if (whitePixels > filledLimit && blackPixels > filledLimit) {
     // Mixed fill found... don't crop anything
     return width;
-  } else if (blackPixels > detectLimit) {
+  } else if (blackPixels > filledLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -125,7 +127,10 @@ uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
 uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height,
                        bool aggressive) {
   int x, y;
-  const auto detectLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  // Komiho: one limit for both the dominant-color check and the content scan —
+  // in aggressive mode faint noise/watermark on the very edge line must not
+  // abort the whole edge as "mixed fill" (the stock limit aborted on ~2 dark
+  // samples; real mixed edges are still >10% on both colors and do abort).
   const auto filledLimit = (uint32_t)round(
       width * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
@@ -142,10 +147,10 @@ uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > detectLimit && blackPixels > detectLimit) {
+  if (whitePixels > filledLimit && blackPixels > filledLimit) {
     // Mixed fill found... don't crop anything
     return 0;
-  } else if (blackPixels > detectLimit) {
+  } else if (blackPixels > filledLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -174,7 +179,10 @@ uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height,
 uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height,
                           bool aggressive) {
   int x, y;
-  const auto detectLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  // Komiho: one limit for both the dominant-color check and the content scan —
+  // in aggressive mode faint noise/watermark on the very edge line must not
+  // abort the whole edge as "mixed fill" (the stock limit aborted on ~2 dark
+  // samples; real mixed edges are still >10% on both colors and do abort).
   const auto filledLimit = (uint32_t)round(
       width * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
@@ -192,10 +200,10 @@ uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > detectLimit && blackPixels > detectLimit) {
+  if (whitePixels > filledLimit && blackPixels > filledLimit) {
     // Mixed fill found... don't crop anything
     return height;
-  } else if (blackPixels > detectLimit) {
+  } else if (blackPixels > filledLimit) {
     detectFunc = isWhitePixel;
   }
 

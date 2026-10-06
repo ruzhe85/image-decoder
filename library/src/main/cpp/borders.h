@@ -16,7 +16,10 @@ const float filledRatioLimit = 0.0025;
  * (0.25%) treats their lines as content and the margin is never cropped. In
  * aggressive mode a line must be ~10% filled to count as the content edge,
  * which skips such small margin artefacts while still stopping at real panel
- * frame lines (~50%+ coverage).
+ * frame lines (~50%+ coverage). The same limit also governs the edge-line
+ * dominant-color check: at the stock limit a couple of dark samples on the
+ * very edge line (scanner noise, watermark bleed) read as "mixed fill" and
+ * silently abort the whole edge.
  */
 const float aggressiveFilledRatioLimit = 0.10;
 
