@@ -14,7 +14,8 @@ bool is_libheif_compatible(const uint8_t* bytes, uint32_t size);
 class HeifDecoder : public BaseDecoder {
 public:
   HeifDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-              cmsHPROFILE targetProfile);
+              cmsHPROFILE targetProfile,
+              bool aggressiveCrop = false);
 
   void decode(uint8_t* outPixels, Rect outRect, Rect inRect,
               uint32_t sampleSize);

@@ -100,9 +100,10 @@ class ImageDecoder private constructor(
     fun newInstance(
       stream: InputStream,
       cropBorders: Boolean = false,
+      aggressiveCrop: Boolean = false,
       displayProfile: ByteArray? = null,
     ) : ImageDecoder? {
-      return stream.use { nativeNewInstance(it, cropBorders, displayProfile) }
+      return stream.use { nativeNewInstance(it, cropBorders, aggressiveCrop, displayProfile) }
     }
 
     fun findType(bytes: ByteArray): ImageType? {
@@ -113,6 +114,7 @@ class ImageDecoder private constructor(
     private external fun nativeNewInstance(
       stream: InputStream,
       cropBorders: Boolean = false,
+      aggressiveCrop: Boolean = false,
       displayProfile: ByteArray?,
     ) : ImageDecoder?
 

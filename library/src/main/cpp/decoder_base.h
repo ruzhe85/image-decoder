@@ -20,9 +20,10 @@ struct ImageInfo {
 class BaseDecoder {
 public:
   BaseDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-              cmsHPROFILE targetProfile) {
+              cmsHPROFILE targetProfile, bool aggressiveCrop = false) {
     this->stream = std::move(stream);
     this->cropBorders = cropBorders;
+    this->aggressiveCrop = aggressiveCrop;
     this->targetProfile = targetProfile;
   }
   virtual ~BaseDecoder() {
@@ -42,6 +43,7 @@ protected:
 
 public:
   bool cropBorders;
+  bool aggressiveCrop;
   cmsHPROFILE targetProfile = nullptr;
   ImageInfo info;
   cmsHTRANSFORM transform = nullptr;

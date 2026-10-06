@@ -22,8 +22,8 @@ auto init_heif_context(Stream* stream) {
 }
 
 HeifDecoder::HeifDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-                         cmsHPROFILE targetProfile)
-    : BaseDecoder(std::move(stream), cropBorders, targetProfile) {
+                         cmsHPROFILE targetProfile, bool aggressiveCrop)
+    : BaseDecoder(std::move(stream), cropBorders, targetProfile, aggressiveCrop) {
   this->info = parseInfo();
 }
 
@@ -40,7 +40,7 @@ ImageInfo HeifDecoder::parseInfo() {
           handle.decode_image(heif_colorspace_YCbCr, heif_chroma_undefined);
       auto pixels = img.get_plane(heif_channel_Y, nullptr);
 
-      bounds = findBorders(pixels, imageWidth, imageHeight);
+      bounds = findBorders(pixels, imageWidth, imageHeight, aggressiveCrop);
     } catch (std::exception& ex) {
       LOGW("Couldn't crop borders on a HEIF/AVIF image of size %dx%d",
            imageWidth, imageHeight);

@@ -20,9 +20,15 @@ bool inline isWhitePixel(const uint8_t* pixels, uint32_t width, uint32_t x,
 /** Return the first x position where there is a substantial amount of fill,
  * starting the search from the left. */
 uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
-                        uint32_t top, uint32_t bottom) {
+                        uint32_t top, uint32_t bottom, bool aggressive) {
   int x, y;
-  const auto filledLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  // Komiho: the dominant-color check keeps the stock limit so dark/mixed page
+  // detection behaves exactly as before; only the content-edge scan uses the
+  // aggressive limit (watermark/page-number lines are a few percent filled and
+  // must not count as content).
+  const auto detectLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  const auto filledLimit = (uint32_t)round(
+      height * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
   // Scan first line to detect dominant color
   uint32_t whitePixels = 0;
@@ -37,10 +43,10 @@ uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > filledLimit && blackPixels > filledLimit) {
+  if (whitePixels > detectLimit && blackPixels > detectLimit) {
     // Mixed fill found... don't crop anything
     return 0;
-  } else if (blackPixels > filledLimit) {
+  } else if (blackPixels > detectLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -67,9 +73,11 @@ uint32_t findBorderLeft(uint8_t* pixels, uint32_t width, uint32_t height,
 /** Return the first x position where there is a substantial amount of fill,
  * starting the search from the right. */
 uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
-                         uint32_t top, uint32_t bottom) {
+                         uint32_t top, uint32_t bottom, bool aggressive) {
   int x, y;
-  const auto filledLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  const auto detectLimit = (uint32_t)round(height * filledRatioLimit / 2);
+  const auto filledLimit = (uint32_t)round(
+      height * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
   // Scan first line to detect dominant color
   uint32_t whitePixels = 0;
@@ -85,10 +93,10 @@ uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > filledLimit && blackPixels > filledLimit) {
+  if (whitePixels > detectLimit && blackPixels > detectLimit) {
     // Mixed fill found... don't crop anything
     return width;
-  } else if (blackPixels > filledLimit) {
+  } else if (blackPixels > detectLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -114,9 +122,12 @@ uint32_t findBorderRight(uint8_t* pixels, uint32_t width, uint32_t height,
 
 /** Return the first y position where there is a substantial amount of fill,
  * starting the search from the top. */
-uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height) {
+uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height,
+                       bool aggressive) {
   int x, y;
-  const auto filledLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  const auto detectLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  const auto filledLimit = (uint32_t)round(
+      width * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
   // Scan first line to detect dominant color
   uint32_t whitePixels = 0;
@@ -131,10 +142,10 @@ uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height) {
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > filledLimit && blackPixels > filledLimit) {
+  if (whitePixels > detectLimit && blackPixels > detectLimit) {
     // Mixed fill found... don't crop anything
     return 0;
-  } else if (blackPixels > filledLimit) {
+  } else if (blackPixels > detectLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -160,9 +171,12 @@ uint32_t findBorderTop(uint8_t* pixels, uint32_t width, uint32_t height) {
 
 /** Return the first y position where there is a substantial amount of fill,
  * starting the search from the bottom. */
-uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height) {
+uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height,
+                          bool aggressive) {
   int x, y;
-  const auto filledLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  const auto detectLimit = (uint32_t)round(width * filledRatioLimit / 2);
+  const auto filledLimit = (uint32_t)round(
+      width * (aggressive ? aggressiveFilledRatioLimit : filledRatioLimit) / 2);
 
   // Scan first line to detect dominant color
   uint32_t whitePixels = 0;
@@ -178,10 +192,10 @@ uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height) {
   }
 
   auto detectFunc = isBlackPixel;
-  if (whitePixels > filledLimit && blackPixels > filledLimit) {
+  if (whitePixels > detectLimit && blackPixels > detectLimit) {
     // Mixed fill found... don't crop anything
     return height;
-  } else if (blackPixels > filledLimit) {
+  } else if (blackPixels > detectLimit) {
     detectFunc = isWhitePixel;
   }
 
@@ -205,11 +219,13 @@ uint32_t findBorderBottom(uint8_t* pixels, uint32_t width, uint32_t height) {
   return height;
 }
 
-Rect findBorders(uint8_t* pixels, uint32_t width, uint32_t height) {
-  uint32_t top = findBorderTop(pixels, width, height);
-  uint32_t bottom = findBorderBottom(pixels, width, height);
-  uint32_t left = findBorderLeft(pixels, width, height, top, bottom);
-  uint32_t right = findBorderRight(pixels, width, height, top, bottom);
+Rect findBorders(uint8_t* pixels, uint32_t width, uint32_t height,
+                 bool aggressive) {
+  uint32_t top = findBorderTop(pixels, width, height, aggressive);
+  uint32_t bottom = findBorderBottom(pixels, width, height, aggressive);
+  uint32_t left = findBorderLeft(pixels, width, height, top, bottom, aggressive);
+  uint32_t right =
+      findBorderRight(pixels, width, height, top, bottom, aggressive);
 
   return {.x = left, .y = top, .width = right - left, .height = bottom - top};
 }

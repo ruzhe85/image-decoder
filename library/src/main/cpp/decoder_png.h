@@ -30,7 +30,8 @@ public:
 class PngDecoder : public BaseDecoder {
 public:
   PngDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-             cmsHPROFILE targetProfile);
+             cmsHPROFILE targetProfile,
+              bool aggressiveCrop = false);
 
   void decode(uint8_t* outPixels, Rect outRect, Rect inRect,
               uint32_t sampleSize);

@@ -13,8 +13,8 @@ static void png_skip_rows(png_structrp png_ptr, png_uint_32 num_rows) {
 }
 
 PngDecoder::PngDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-                       cmsHPROFILE targetProfile)
-    : BaseDecoder(std::move(stream), cropBorders, targetProfile) {
+                       cmsHPROFILE targetProfile, bool aggressiveCrop)
+    : BaseDecoder(std::move(stream), cropBorders, targetProfile, aggressiveCrop) {
   this->info = parseInfo();
 }
 
@@ -99,7 +99,7 @@ ImageInfo PngDecoder::parseInfo() {
           pixelsPos += imageWidth;
         }
       }
-      bounds = findBorders(pixels.get(), imageWidth, imageHeight);
+      bounds = findBorders(pixels.get(), imageWidth, imageHeight, aggressiveCrop);
     } catch (std::bad_alloc& ex) {
       LOGW("Couldn't crop borders on a PNG image of size %dx%d", imageWidth,
            imageHeight);

@@ -9,8 +9,8 @@
 #include <algorithm>
 
 JpegDecoder::JpegDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-                         cmsHPROFILE targetProfile)
-    : BaseDecoder(std::move(stream), cropBorders, targetProfile) {
+                         cmsHPROFILE targetProfile, bool aggressiveCrop)
+    : BaseDecoder(std::move(stream), cropBorders, targetProfile, aggressiveCrop) {
   this->info = parseInfo();
 }
 
@@ -60,7 +60,7 @@ ImageInfo JpegDecoder::parseInfo() {
         jpeg_read_scanlines(&jinfo, &offset, 1);
       }
       jpeg_finish_decompress(&jinfo);
-      bounds = findBorders(pixels.data(), imageWidth, imageHeight);
+      bounds = findBorders(pixels.data(), imageWidth, imageHeight, aggressiveCrop);
     } catch (std::exception& ex) {
       LOGW("Couldn't crop borders on a JPEG image of size %dx%d", imageWidth,
            imageHeight);

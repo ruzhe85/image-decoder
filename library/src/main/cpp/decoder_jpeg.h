@@ -26,7 +26,8 @@ public:
 class JpegDecoder : public BaseDecoder {
 public:
   JpegDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-              cmsHPROFILE targetProfile);
+              cmsHPROFILE targetProfile,
+              bool aggressiveCrop = false);
 
   void decode(uint8_t* outPixels, Rect outRect, Rect srcRegion,
               uint32_t sampleSize);

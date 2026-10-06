@@ -5,8 +5,8 @@
 #include "decoder_webp.h"
 
 WebpDecoder::WebpDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-                         cmsHPROFILE targetProfile)
-    : BaseDecoder(std::move(stream), cropBorders, targetProfile) {
+                         cmsHPROFILE targetProfile, bool aggressiveCrop)
+    : BaseDecoder(std::move(stream), cropBorders, targetProfile, aggressiveCrop) {
   this->info = parseInfo();
 }
 
@@ -29,7 +29,7 @@ ImageInfo WebpDecoder::parseInfo() {
     auto* luma = WebPDecodeYUV(stream->bytes, stream->size, &iw, &ih, &u, &v,
                                &stride, &uvStride);
     if (luma != nullptr) {
-      bounds = findBorders(luma, imageWidth, imageHeight);
+      bounds = findBorders(luma, imageWidth, imageHeight, aggressiveCrop);
       WebPFree(luma);
     } else {
       LOGW("Couldn't crop borders on a WebP image of size %dx%d", imageWidth,

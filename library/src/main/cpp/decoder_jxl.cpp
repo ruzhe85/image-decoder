@@ -6,8 +6,8 @@
 #include "row_convert.h"
 
 JpegxlDecoder::JpegxlDecoder(std::shared_ptr<Stream>&& stream, bool cropBorders,
-                             cmsHPROFILE targetProfile)
-    : BaseDecoder(std::move(stream), cropBorders, targetProfile),
+                             cmsHPROFILE targetProfile, bool aggressiveCrop)
+    : BaseDecoder(std::move(stream), cropBorders, targetProfile, aggressiveCrop),
       mSrcProfile(nullptr) {
   this->info = parseInfo();
 }
@@ -136,7 +136,7 @@ ImageInfo JpegxlDecoder::parseInfo() {
       }
     }
 
-    bounds = findBorders(gray_buffer, jxl_info.xsize, jxl_info.ysize);
+    bounds = findBorders(gray_buffer, jxl_info.xsize, jxl_info.ysize, aggressiveCrop);
   } else {
     bounds = {
         .x = 0, .y = 0, .width = jxl_info.xsize, .height = jxl_info.ysize};

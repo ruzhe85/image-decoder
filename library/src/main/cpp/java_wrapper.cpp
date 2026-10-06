@@ -28,6 +28,7 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_tachiyomi_decoder_ImageDecoder_nativeNewInstance(JNIEnv* env, jclass,
                                                       jobject jstream,
                                                       jboolean cropBorders,
+                                                      jboolean aggressiveCrop,
                                                       jbyteArray icm_stream) {
   auto stream = read_all_java_stream(env, jstream);
   if (!stream) {
@@ -56,28 +57,33 @@ Java_tachiyomi_decoder_ImageDecoder_nativeNewInstance(JNIEnv* env, jclass,
     } // This should be optimized out by the compiler.
 #ifdef HAVE_LIBJPEG
     else if (is_jpeg(stream->bytes)) {
-      decoder = new JpegDecoder(std::move(stream), cropBorders, targetProfile);
+      decoder = new JpegDecoder(std::move(stream), cropBorders, targetProfile,
+                                aggressiveCrop);
     }
 #endif
 #ifdef HAVE_LIBPNG
     else if (is_png(stream->bytes)) {
-      decoder = new PngDecoder(std::move(stream), cropBorders, targetProfile);
+      decoder = new PngDecoder(std::move(stream), cropBorders, targetProfile,
+                               aggressiveCrop);
     }
 #endif
 #ifdef HAVE_LIBWEBP
     else if (is_webp(stream->bytes)) {
-      decoder = new WebpDecoder(std::move(stream), cropBorders, targetProfile);
+      decoder = new WebpDecoder(std::move(stream), cropBorders, targetProfile,
+                                aggressiveCrop);
     }
 #endif
 #ifdef HAVE_LIBHEIF
     else if (is_libheif_compatible(stream->bytes, stream->size)) {
-      decoder = new HeifDecoder(std::move(stream), cropBorders, targetProfile);
+      decoder = new HeifDecoder(std::move(stream), cropBorders, targetProfile,
+                                aggressiveCrop);
     }
 #endif
 #ifdef HAVE_LIBJXL
     else if (is_jxl(stream->bytes)) {
       decoder =
-          new JpegxlDecoder(std::move(stream), cropBorders, targetProfile);
+          new JpegxlDecoder(std::move(stream), cropBorders, targetProfile,
+                            aggressiveCrop);
     }
 #endif
     else {
