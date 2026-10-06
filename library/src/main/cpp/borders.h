@@ -11,17 +11,29 @@
 const float filledRatioLimit = 0.0025;
 
 /**
- * Komiho: aggressive mode threshold. Watermarks / page numbers sit inside the
- * margin but their line coverage is only a few percent, so the stock limit
- * (0.25%) treats their lines as content and the margin is never cropped. In
- * aggressive mode a line must be ~10% filled to count as the content edge,
- * which skips such small margin artefacts while still stopping at real panel
- * frame lines (~50%+ coverage). The same limit also governs the edge-line
- * dominant-color check: at the stock limit a couple of dark samples on the
- * very edge line (scanner noise, watermark bleed) read as "mixed fill" and
- * silently abort the whole edge.
+ * Komiho: aggressive mode content-floor. A connected component counts as
+ * content if its area is at least this fraction of the (downsampled) image
+ * area — watermarks, page numbers and specks fall below it, panels are far
+ * above.
  */
-const float aggressiveFilledRatioLimit = 0.10;
+const float aggressiveContentAreaRatio = 0.0002f;
+
+/**
+ * Komiho: aggressive mode edge-bar rule. A component touching the image edge
+ * is only kept if it is at least this thick (min of its width/height) — that
+ * keeps full-bleed art while discarding the thin black scanner bars / baked-in
+ * frames that sit between the margin and the content.
+ */
+const float aggressiveEdgeBarThicknessRatio = 0.03f;
+
+/**
+ * Komiho: aggressive mode rim refinement. A scanner bar 4-connected to the
+ * content merges into a kept component and drags the content bbox to the
+ * image edge; walking inward from each rim while lines are >= this fraction
+ * dark removes such attached bars. The walk stops at the first non-solid
+ * line, so sparse art edges are never eaten.
+ */
+const float aggressiveSolidLineRatio = 0.85f;
 
 /** When the threshold is closer to 1, less content will be cropped. **/
 #define THRESHOLD 0.75
