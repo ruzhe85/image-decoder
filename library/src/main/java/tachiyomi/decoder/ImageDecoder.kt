@@ -106,6 +106,25 @@ class ImageDecoder private constructor(
       return stream.use { nativeNewInstance(it, cropBorders, aggressiveCrop, displayProfile) }
     }
 
+    /**
+     * Binary-compatible entry point for the upstream signature
+     * `newInstance(InputStream, Boolean, ByteArray?)`.
+     *
+     * SubsamplingScaleImageView is compiled against upstream and keeps calling that exact
+     * descriptor at runtime; inserting [aggressiveCrop] in front of [displayProfile] above removed
+     * it, so tiled decoding died with NoSuchMethodError. This adds only the JVM method (the Kotlin
+     * name differs, so callers keep resolving to the function above) and leaves aggressive crop off,
+     * which is what the calling fork was compiled to expect.
+     */
+    @JvmName("newInstance")
+    fun newInstanceWithDisplayProfile(
+      stream: InputStream,
+      cropBorders: Boolean,
+      displayProfile: ByteArray?,
+    ) : ImageDecoder? {
+      return newInstance(stream, cropBorders, aggressiveCrop = false, displayProfile = displayProfile)
+    }
+
     fun findType(bytes: ByteArray): ImageType? {
       return nativeFindType(bytes)
     }
